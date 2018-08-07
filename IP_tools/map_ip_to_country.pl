@@ -18,13 +18,16 @@ my $file_location = "";
 my $ips = "";
 my $verbose = 0;
 my $no_validation = 0;
+my $remove_faulty = 0;
 my @ip_values;
+my @validated_ips;
 
 usage() unless GetOptions(
     "h|help"            => \&usage,
     "f|file-location=s" => \$file_location,
     "i|ips=s"           => \$ips,
     "n|no-validation"   => \$no_validation,
+    "r|remove-faulty"   => \$remove_faulty,
     "v|verbose"         => \$verbose,
 );
 
@@ -38,12 +41,12 @@ if ($file_location) {
 
 unless ($no_validation) {
     print "Validating IP's\n" if $verbose;
-    validate_ips(@ip_values);
+    @validated_ips = validate_ips(@ip_values);
     print "IP validation successful\n" if $verbose;
 }
 
 print "Mapping IP's to corresponding countries\n" if $verbose;
-my $results = map_ips_to_country(@ip_values);
+my $results = map_ips_to_country(@validated_ips);
 
 print "\n".$results."\n";
 
@@ -61,6 +64,10 @@ sub initial_checks {
         usage("--file-location and --ips are mutually exclusive, they cannot be passed at the same time!");
     }
 
+    if ($no_validation && $remove_faulty) {
+        usage("--no-validation and --reomve-faulty cannot be passed at the same time!");
+    }
+
     if ($file_location && ! -f $file_location) {
         die("$file_location is not a valid file!");
     }
@@ -68,13 +75,21 @@ sub initial_checks {
 
 sub validate_ips {
     my @ips_to_validate = @_;
+    my $iterator = 0;
 
     foreach my $ip (@ips_to_validate) {
         print "Validating $ip\n" if $verbose;
         if (! is_public_ipv4($ip)) {
-            die("$ip is not a valid IP!");
+            if ($remove_faulty) {
+                print "Removing bogus entry from list: $ip\n" if $verbose;
+                splice(@ips_to_validate, $iterator, 1);
+            } else {
+                die("$ip is not a valid IP!");
+            }
         }
+        $iterator++;
     }
+    return @ips_to_validate
 }
 
 sub map_ips_to_country {
@@ -104,6 +119,7 @@ sub usage {
     -f, --file-location     - Load IP's from a file instead of the command line
     -i, --ips               - IP's to process (separated by spaces)
     -n, --no-validation     - Do not validate the IP's
+    -r, --remove-faulty     - Ignore IP's that do not pass IP validation
     -v, --verbose           - Be more verbose
 
        END

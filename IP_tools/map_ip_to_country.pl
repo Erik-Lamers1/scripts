@@ -43,7 +43,10 @@ unless ($no_validation) {
     print "Validating IP's\n" if $verbose;
     @validated_ips = validate_ips(@ip_values);
     print "IP validation successful\n" if $verbose;
+} else {
+    @validated_ips = @ip_values;
 }
+undef @ip_values;
 
 print "Mapping IP's to corresponding countries\n" if $verbose;
 my $results = map_ips_to_country(@validated_ips);

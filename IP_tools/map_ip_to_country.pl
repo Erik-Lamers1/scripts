@@ -65,7 +65,7 @@ sub initial_checks {
     }
 
     if ($no_validation && $remove_faulty) {
-        usage("--no-validation and --reomve-faulty cannot be passed at the same time!");
+        usage("--no-validation and --remove-faulty cannot be passed at the same time!");
     }
 
     if ($file_location && ! -f $file_location) {

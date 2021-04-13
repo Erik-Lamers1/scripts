@@ -9,7 +9,7 @@ TYPES = ("global", "private", "link-local", "loopback", "multicast", "reserved",
 
 
 def parse_args(args: Sequence = None) -> Namespace:
-    parser = ArgumentParser(description="Simple script to mimic the 'ipcalc' command on Linux. Works with both IPv4 and IPv6")
+    parser = ArgumentParser(description="Simple script to mimic the 'ipcalc' command on Linux. Works for both IPv4 and IPv6")
     parser.add_argument("ip_address", type=ipaddress.ip_interface, help="The IP network to calculate")
     parser.add_argument("-b", "--binary", action="store_true", help="Display binary representation")
     parser.add_argument(
@@ -30,7 +30,10 @@ def print_formatted(first: str, second: str, third: str) -> None:
     print("{:<10} {:<40} {:<10}".format(first, second, third))
 
 
-def get_type(network):
+def get_type(network: ipaddress.ip_network) -> str:
+    """
+    For all types in TYPES, check if the ip_network is of that type, if so return it's name
+    """
     for t in TYPES:
         if getattr(network, f"is_{t}"):
             return t
